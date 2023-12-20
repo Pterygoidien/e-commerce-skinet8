@@ -91,4 +91,36 @@ public class ProductsController : ControllerBase
     {
         return $"This will delete product {id}";
     }
+
+
+    /// <summary>
+    /// Get a list of product brands
+    /// </summary>
+    /// <returns>
+    /// Returns a list of product brands.
+    /// </returns>
+    /// <response code="200">Returns a list of product brands.</response>
+    /// <response code="204">If the product brands list is empty</response>
+    [HttpGet("brands", Name = "GetProductBrands")]
+    public async Task<ActionResult<IReadOnlyList<ProductBrand>>> GetProductBrands()
+    {
+        return Ok(await _productRepository.GetProductBrandsAsync());
+    }
+
+
+    /// <summary>
+    /// Get a list of product types
+    /// </summary>
+    /// <returns>
+    /// Returns a list of product types.
+    /// </returns>
+    /// <response code="200">Returns a list of product types.</response>
+    /// <response code="204">If the product types list is empty</response>
+    [HttpGet("types", Name = "GetProductTypes")]
+    public async Task<ActionResult<IReadOnlyList<ProductType>>> GetProductTypes()
+    {
+        var productTypes = await _productRepository.GetProductTypesAsync();
+        return Ok(productTypes);
+    }
 }
+
