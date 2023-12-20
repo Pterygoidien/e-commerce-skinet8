@@ -1,5 +1,5 @@
 using Core.Entities;
-using Infrastructure.Data;
+using Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,11 +9,11 @@ namespace API.Controllers;
 [Route("api/[controller]")]
 public class ProductsController : ControllerBase
 {
-    private readonly StoreContext _storeContext;
+    private IProductRepository _productRepository;
 
-    public ProductsController(StoreContext storeContext)
+    public ProductsController(IProductRepository productRepository)
     {
-        this._storeContext = storeContext; // this is a reference to the current instance of the class
+        this._productRepository = productRepository;
 
     }
 
@@ -28,7 +28,8 @@ public class ProductsController : ControllerBase
     // List<Product> : Represents a strongly typed list of objects that can be accessed by index. Provides methods to search, sort, and manipulate lists.
     public async Task<ActionResult<List<Product>>> GetProducts()
     {
-        return await _storeContext.Products.ToListAsync();
+        var products = await _productRepository.GetProductsAsync();
+        return Ok(products);
     }
 
 
@@ -36,7 +37,7 @@ public class ProductsController : ControllerBase
     /// <summary>
     /// Get a product by id
     /// </summary>
-    /// <param name="id">The id (UUID) of the product</param>
+    /// <param name="id">The id (int) of the product</param>
     /// <returns>
     /// Returns the product with the specified id if found, or null if not found.
     /// </returns>
@@ -45,7 +46,11 @@ public class ProductsController : ControllerBase
     [HttpGet("{id}", Name = "GetProduct")]
     public async Task<ActionResult<Product>> GetProduct(int id)
     {
-        return await _storeContext.Products.FindAsync(id);
+        // var product = await _productRepository.GetProductByIdAsync(id);
+        // if (product is not null) return Ok(product);
+        // return NoContent();
+
+        return await _productRepository.GetProductByIdAsync(id);
     }
 
 
