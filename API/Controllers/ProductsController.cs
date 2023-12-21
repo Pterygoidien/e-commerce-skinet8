@@ -1,3 +1,5 @@
+using API.Dtos;
+using AutoMapper;
 using Core.Entities;
 using Core.Interfaces;
 using Core.Specifications;
@@ -12,16 +14,19 @@ public class ProductsController : ControllerBase
     private IGenericRepository<Product> _productRepository;
     private IGenericRepository<ProductBrand> _productBrandRepository;
     private IGenericRepository<ProductType> _productTypeRepository;
+    private IMapper _mapper;
 
     public ProductsController(
         IGenericRepository<Product> productRepository,
         IGenericRepository<ProductBrand> productBrandRepository,
-        IGenericRepository<ProductType> productTypeRepository
+        IGenericRepository<ProductType> productTypeRepository,
+        IMapper mapper
     )
     {
         this._productRepository = productRepository;
         this._productBrandRepository = productBrandRepository;
         this._productTypeRepository = productTypeRepository;
+        this._mapper = mapper;
     }
 
 
@@ -34,14 +39,11 @@ public class ProductsController : ControllerBase
     [HttpGet(Name = "GetProducts")]
     // ActionResult : Represents the result of an action method. An action method returns an ActionResult object or one of its many derived types.
     // List<Product> : Represents a strongly typed list of objects that can be accessed by index. Provides methods to search, sort, and manipulate lists.
-    public async Task<ActionResult<List<Product>>> GetProducts()
+    public async Task<ActionResult<IReadOnlyList<ProductToReturnDto>>> GetProducts()
     {
         var spec = new ProductsWithTypesAndBrandsSpecifications();
         var products = await _productRepository.ListAsync(spec);
-        return Ok(products);
-
-        //or 
-        // return Ok(await _productRepository.ListAsync(new ProductsWithTypesAndBrandsSpecifications()));
+        return Ok(_mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductToReturnDto>>(products));
     }
 
 
@@ -56,10 +58,13 @@ public class ProductsController : ControllerBase
     /// <response code="200">Returns the product with the specified id if found, or null if not found.</response>
     /// <response code="204">If the product is not found (null)</response>
     [HttpGet("{id}", Name = "GetProduct")]
-    public async Task<ActionResult<Product>> GetProduct(int id)
+    public async Task<ActionResult<ProductToReturnDto>> GetProduct(int id)
     {
         var spec = new ProductsWithTypesAndBrandsSpecifications(id);
-        return await _productRepository.GetEntityWithSpec(spec);
+
+        var product = await _productRepository.GetEntityWithSpec(spec);
+
+        return _mapper.Map<Product, ProductToReturnDto>(product);
 
     }
 

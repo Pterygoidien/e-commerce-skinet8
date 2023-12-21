@@ -2,6 +2,7 @@
 * The program.cs is the entry point of the application. It is the first file that is run when the application starts.
 */
 
+using API.Helpers;
 using Core.Interfaces;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -35,6 +36,8 @@ builder.Services.AddScoped(typeof(IGenericRepository<>), (typeof(GenericReposito
 // The IGenericRepository interface is used to register the GenericRepository class as a service. This is because the GenericRepository class implements the IGenericRepository interface.
 // since we don't know the type (hence the use of generics and empty <>) of the GenericRepository class, we use the typeof keyword to get the type of the GenericRepository class.
 
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies()); // registers the MappingProfiles class as a service in the application.
+
 
 var app = builder.Build();
 
@@ -46,6 +49,8 @@ if (app.Environment.IsDevelopment())
 }
 
 // app.UseHttpsRedirection();
+
+app.UseStaticFiles();
 
 app.UseAuthorization();
 
