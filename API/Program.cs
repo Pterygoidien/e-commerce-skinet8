@@ -1,3 +1,7 @@
+/**
+* The program.cs is the entry point of the application. It is the first file that is run when the application starts.
+*/
+
 using Core.Interfaces;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +30,10 @@ builder.Services.AddDbContext<StoreContext>(opt =>
 // This is not what we want. We want a new instance of the ProductRepository class to be created for every request.
 // The IProductRepository interface is used to register the ProductRepository class as a service. This is because the ProductRepository class implements the IProductRepository interface.
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+
+builder.Services.AddScoped(typeof(IGenericRepository<>), (typeof(GenericRepository<>))); // registers the GenericRepository class as a service in the application.
+// The IGenericRepository interface is used to register the GenericRepository class as a service. This is because the GenericRepository class implements the IGenericRepository interface.
+// since we don't know the type (hence the use of generics and empty <>) of the GenericRepository class, we use the typeof keyword to get the type of the GenericRepository class.
 
 
 var app = builder.Build();

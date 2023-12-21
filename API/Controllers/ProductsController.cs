@@ -1,7 +1,7 @@
 using Core.Entities;
 using Core.Interfaces;
+using Core.Specifications;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
@@ -9,13 +9,21 @@ namespace API.Controllers;
 [Route("api/[controller]")]
 public class ProductsController : ControllerBase
 {
-    private IProductRepository _productRepository;
+    private IGenericRepository<Product> _productRepository;
+    private IGenericRepository<ProductBrand> _productBrandRepository;
+    private IGenericRepository<ProductType> _productTypeRepository;
 
-    public ProductsController(IProductRepository productRepository)
+    public ProductsController(
+        IGenericRepository<Product> productRepository,
+        IGenericRepository<ProductBrand> productBrandRepository,
+        IGenericRepository<ProductType> productTypeRepository
+    )
     {
         this._productRepository = productRepository;
-
+        this._productBrandRepository = productBrandRepository;
+        this._productTypeRepository = productTypeRepository;
     }
+
 
     /// <summary>
     /// Get a list of products
@@ -28,8 +36,12 @@ public class ProductsController : ControllerBase
     // List<Product> : Represents a strongly typed list of objects that can be accessed by index. Provides methods to search, sort, and manipulate lists.
     public async Task<ActionResult<List<Product>>> GetProducts()
     {
-        var products = await _productRepository.GetProductsAsync();
+        var spec = new ProductsWithTypesAndBrandsSpecifications();
+        var products = await _productRepository.ListAsync(spec);
         return Ok(products);
+
+        //or 
+        // return Ok(await _productRepository.ListAsync(new ProductsWithTypesAndBrandsSpecifications()));
     }
 
 
@@ -46,11 +58,9 @@ public class ProductsController : ControllerBase
     [HttpGet("{id}", Name = "GetProduct")]
     public async Task<ActionResult<Product>> GetProduct(int id)
     {
-        // var product = await _productRepository.GetProductByIdAsync(id);
-        // if (product is not null) return Ok(product);
-        // return NoContent();
+        var spec = new ProductsWithTypesAndBrandsSpecifications(id);
+        return await _productRepository.GetEntityWithSpec(spec);
 
-        return await _productRepository.GetProductByIdAsync(id);
     }
 
 
@@ -104,7 +114,7 @@ public class ProductsController : ControllerBase
     [HttpGet("brands", Name = "GetProductBrands")]
     public async Task<ActionResult<IReadOnlyList<ProductBrand>>> GetProductBrands()
     {
-        return Ok(await _productRepository.GetProductBrandsAsync());
+        return Ok(await _productBrandRepository.ListAllAsync());
     }
 
 
@@ -119,7 +129,7 @@ public class ProductsController : ControllerBase
     [HttpGet("types", Name = "GetProductTypes")]
     public async Task<ActionResult<IReadOnlyList<ProductType>>> GetProductTypes()
     {
-        var productTypes = await _productRepository.GetProductTypesAsync();
+        var productTypes = await _productTypeRepository.ListAllAsync();
         return Ok(productTypes);
     }
 }
