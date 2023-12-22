@@ -2,9 +2,11 @@
 * The program.cs is the entry point of the application. It is the first file that is run when the application starts.
 */
 
-using API.Helpers;
+using API.Errors;
+using API.Middleware;
 using Core.Interfaces;
 using Infrastructure.Data;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -32,20 +34,40 @@ builder.Services.AddDbContext<StoreContext>(opt =>
 // The IProductRepository interface is used to register the ProductRepository class as a service. This is because the ProductRepository class implements the IProductRepository interface.
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
-builder.Services.AddScoped(typeof(IGenericRepository<>), (typeof(GenericRepository<>))); // registers the GenericRepository class as a service in the application.
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>)); // registers the GenericRepository class as a service in the application.
 // The IGenericRepository interface is used to register the GenericRepository class as a service. This is because the GenericRepository class implements the IGenericRepository interface.
 // since we don't know the type (hence the use of generics and empty <>) of the GenericRepository class, we use the typeof keyword to get the type of the GenericRepository class.
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies()); // registers the MappingProfiles class as a service in the application.
 
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = actionContext =>
+    {
+        var errors = actionContext.ModelState
+            .Where(e => e.Value.Errors.Count > 0)
+            .SelectMany(x => x.Value.Errors)
+            .Select(x => x.ErrorMessage).ToArray();
+
+        var errorResponse = new ApiValidationErrorResponse
+        {
+            Errors = errors
+        };
+
+        return new BadRequestObjectResult(errorResponse);
+    };
+});
+
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+app.UseMiddleware<ExceptionMiddleware>(); // this is middleware that will intercept any errors and redirect to the error controller
+app.UseStatusCodePagesWithReExecute("/errors/{0}"); // this is middleware that will intercept any errors and redirect to the error controller
 if (app.Environment.IsDevelopment())
 {
-    // app.UseSwagger();
-    // app.UseSwaggerUI();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 // app.UseHttpsRedirection();
