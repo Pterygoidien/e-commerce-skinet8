@@ -38,9 +38,13 @@ public class ProductsController : BaseApiController
     [HttpGet(Name = "GetProducts")]
     // ActionResult : Represents the result of an action method. An action method returns an ActionResult object or one of its many derived types.
     // List<Product> : Represents a strongly typed list of objects that can be accessed by index. Provides methods to search, sort, and manipulate lists.
-    public async Task<ActionResult<IReadOnlyList<ProductToReturnDto>>> GetProducts()
+    public async Task<ActionResult<IReadOnlyList<ProductToReturnDto>>> GetProducts(
+        string sort,
+        int? brandId,
+        int? typeId
+    )
     {
-        var spec = new ProductsWithTypesAndBrandsSpecifications();
+        var spec = new ProductsWithTypesAndBrandsSpecifications(sort, brandId, typeId);
         var products = await _productRepository.ListAsync(spec);
         return Ok(_mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductToReturnDto>>(products));
     }
