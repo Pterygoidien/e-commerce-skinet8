@@ -29,6 +29,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseStaticFiles();
 
+app.UseCors("CorsPolicy"); // this is middleware that will intercept any requests and redirect to the CorsPolicy
+                           // the CorsPolicy is defined in the ApplicationServicesExtensions.cs file
+
 app.UseAuthorization();
 
 app.MapControllers();
