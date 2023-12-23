@@ -1,5 +1,6 @@
 using API.Dtos;
 using API.Errors;
+using API.Helpers;
 using AutoMapper;
 using Core.Entities;
 using Core.Interfaces;
@@ -38,15 +39,20 @@ public class ProductsController : BaseApiController
     [HttpGet(Name = "GetProducts")]
     // ActionResult : Represents the result of an action method. An action method returns an ActionResult object or one of its many derived types.
     // List<Product> : Represents a strongly typed list of objects that can be accessed by index. Provides methods to search, sort, and manipulate lists.
-    public async Task<ActionResult<IReadOnlyList<ProductToReturnDto>>> GetProducts(
-        string sort,
-        int? brandId,
-        int? typeId
-    )
+    public async Task<ActionResult<Pagination<ProductToReturnDto>>> GetProducts(
+        [FromQuery] ProductSpecParams productParams)
+
     {
-        var spec = new ProductsWithTypesAndBrandsSpecifications(sort, brandId, typeId);
+        var spec = new ProductsWithTypesAndBrandsSpecifications(productParams);
+
+        var countSpec = new ProductWithFiltersForCountSpecification(productParams);
+
+        var totalItems = await _productRepository.CountAsync(countSpec);
         var products = await _productRepository.ListAsync(spec);
-        return Ok(_mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductToReturnDto>>(products));
+
+        var data = _mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductToReturnDto>>(products);
+
+        return Ok(new Pagination<ProductToReturnDto>(productParams.PageIndex, productParams.PageSize, totalItems, data));
     }
 
 
