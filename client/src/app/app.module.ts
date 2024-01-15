@@ -1,12 +1,12 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { HttpClientModule } from '@angular/common/http';
 
 import { AppComponent } from './app.component';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppRoutingModule } from './app-routing.module';
 import { AppCoreModule } from './core/app-core.module';
-import { HttpClientModule } from '@angular/common/http';
-import { ShopModule } from './shop/shop.module';
+import { HomeModule } from './home/home.module';
 
 @NgModule({
   declarations: [AppComponent],
@@ -16,7 +16,7 @@ import { ShopModule } from './shop/shop.module';
     AppCoreModule,
     BrowserAnimationsModule,
     HttpClientModule,
-    ShopModule,
+    HomeModule,
   ],
   providers: [],
   bootstrap: [AppComponent],
