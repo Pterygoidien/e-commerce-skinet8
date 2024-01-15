@@ -1,11 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { IProduct } from '../shared/models/product';
 import { ShopService } from './shop.service';
 import { IBrand } from '../shared/models/brand';
 import { IType } from '../shared/models/type';
 import { IPagination } from '../shared/models/pagination';
 import { ShopParams } from '../shared/models/shopParams';
-import { PageChangedEvent } from 'ngx-bootstrap/pagination';
 
 @Component({
   selector: 'app-shop',
@@ -13,6 +12,7 @@ import { PageChangedEvent } from 'ngx-bootstrap/pagination';
   styleUrls: ['./shop.component.scss'],
 })
 export class ShopComponent implements OnInit {
+  @ViewChild('search') searchTerm?: ElementRef; // temporary solution, beforing using Angular Reactive Forms
   products: IProduct[] = [];
   brands: IBrand[] = [];
   types: IType[] = [];
@@ -86,12 +86,21 @@ export class ShopComponent implements OnInit {
     this.getProduts();
   }
 
-  onPageChanged(event: PageChangedEvent): void {
-    if (this.shopParams.pageNumber !== event.page) {
-      console.log(typeof event);
-      console.log(typeof event.page);
-      this.shopParams.pageNumber = event.page;
+  onPageChanged(pageNumber: number): void {
+    if (this.shopParams.pageNumber !== pageNumber) {
+      this.shopParams.pageNumber = pageNumber;
       this.getProduts();
     }
+  }
+
+  onSearch(): void {
+    this.shopParams.search = this.searchTerm?.nativeElement.value;
+    this.getProduts();
+  }
+
+  onReset(): void {
+    if (this.searchTerm) this.searchTerm.nativeElement.value = '';
+    this.shopParams = new ShopParams();
+    this.getProduts();
   }
 }
